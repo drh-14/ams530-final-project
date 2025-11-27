@@ -1,4 +1,5 @@
 import random
+import numpy as np
 
 def generate_grid(N, M, n, m, num_black, num_white):
     num_rows, num_cols = N // n, M // m
@@ -11,5 +12,9 @@ def generate_grid(N, M, n, m, num_black, num_white):
             random_x = [random.uniform(x_start, x_end)] * num_points
             random_y = [random.uniform(y_start, y_end)] * num_points
             for k in range(num_points):
-                grid[i][j].append((random_x[k], random_y[k]))     
+                random_angle = random.uniform(0, 2 * np.pi)
+                magnitude = random.uniform(0, 1)
+                velocity_x = magnitude * np.cos(random_angle)
+                velocity_y = magnitude * np.sin(random_angle)
+                grid[i][j].append(((random_x[k], random_y[k]), (velocity_x, velocity_y)))     
     return grid
