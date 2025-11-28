@@ -11,4 +11,4 @@ def compute_force_pairwise(point_1, point_2):
     return displacement_vector_normalized * energy
     
 def compute_force_total(point, points):
-    return -0.5 * np.sum(compute_force_pairwise(point, x) for x in points if point != x)  
+    return -0.5 * np.sum([compute_force_pairwise(point, x) for x in points if point != x])  
