@@ -1,7 +1,6 @@
 from mpi4py import MPI
 from grid import *
 from force import *
-from motion import *
 import matplotlib.pyplot as plt
 import time
 
@@ -30,15 +29,14 @@ if __name__ == "__main__":
             nr,nc = row_index + dx, col_index + dy
             if 0 <= nr < 6 and 0 <= nc < 6:
                 neighbor_cells.append(comm.sendrecv(sendobj = cell, dest = 6 * nr + nc, source = 6 * nr + nc))
-        
-        force = compute_force_total(cell, neighbor_cells) # type: ignore
-        new_velocity = update_velocity(cell[1][1], force, step_size) # type: ignore
-        new_position = update_position(cell[0], new_velocity, step_size) # type: ignore
-        new_cell = (new_velocity, new_position)
-        updated_cells = comm.gather(new_cell)
+        for point in cell:
+            force = compute_force_total(point, neighbor_cells)
+            update_cell(cell, force, step_size)
+        updated_cells = comm.gather(cell)
         if rank == 0:
-            for i in range(size):
-                grid[i // 6][i % 6] = updated_cells # type: ignore
+            if updated_cells:
+                for i in range(size):
+                    grid[i // 6][i % 6] = updated_cells[i]
 
     processor_times = comm.gather(time.time() - start_time)
     if rank == 0:
