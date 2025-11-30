@@ -16,28 +16,30 @@ if __name__ == "__main__":
 
     step_size = 10 ** (-6)
     start_time = time.time()
+    directions = [[-1,0], [-1,-1], [-1, 1], [1,0], [1, -1], [1,1], [0, 1], [0, -1], [0, 0]]
     for i in range(100):
-        grid = comm.bcast(grid)
-        # Determine sub-box to work on.
-        updated_subgrid = []
-        row_index, column_index = rank // 6, rank % 6
-        for lst in grid[row_index][column_index]:
-            point, velocity_vector = lst
-            force = compute_force_total(point, grid)
-            new_velocity = update_velocity(velocity_vector, force, step_size)
-            new_position = update_position(point, new_velocity, step_size)
-            updated_subgrid.append((new_position, new_velocity))
-
-        # Send back to root process.
-        updated_data = comm.gather(updated_subgrid)
-        
+        # Send main cell.
         if rank == 0:
-            # Update positions and velocities of points.
-            if updated_data:
-               for i in range(len(grid)):
-                   for j in range(len(grid[0])):
-                       grid[i][j] = updated_data[i][j]
-            
+            for j in range(1, size):
+               comm.send(grid[j // 6][j % 6], dest = j)
+       
+        cell = grid[0][0] if rank == 0 else comm.recv(source = 0)
+        row_index, col_index = rank // 6, rank % 6
+        neighbor_cells = []
+        for dx, dy in directions:
+            nr,nc = row_index + dx, col_index + dy
+            if 0 <= nr < 6 and 0 <= nc < 6:
+                neighbor_cells.append(comm.sendrecv(sendobj = cell, dest = 6 * nr + nc, source = 6 * nr + nc))
+        
+        force = compute_force_total(cell, neighbor_cells) # type: ignore
+        new_velocity = update_velocity(cell[1][1], force, step_size) # type: ignore
+        new_position = update_position(cell[0], new_velocity, step_size) # type: ignore
+        new_cell = (new_velocity, new_position)
+        updated_cells = comm.gather(new_cell)
+        if rank == 0:
+            for i in range(size):
+                grid[i // 6][i % 6] = updated_cells # type: ignore
+
     processor_times = comm.gather(time.time() - start_time)
     if rank == 0:
         plt.title("Final Positions of Particles")
