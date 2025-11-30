@@ -3,7 +3,7 @@ from numpy.typing import NDArray
 from typing import List, Tuple
 
 def LJ_derivative(r: np.float64):
-    return -12 * (1 / np.pow(r, 13) - 1 / np.pow(r, 7))
+    return -12 * (1 / np.pow(r, 13) - 1 / np.pow(r, 7)) if r > 3 else 0
 
 def compute_force_pairwise(point_1: NDArray[np.float64], point_2: NDArray[np.float64]):
     displacement_vector = np.array([point_2[0] - point_1[0], point_2[1] - point_1[1]])

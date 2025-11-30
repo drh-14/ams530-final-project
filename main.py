@@ -12,11 +12,11 @@ if __name__ == "__main__":
     grid = [[]]
 
     if rank == 0:
-        grid = generate_grid(60, 60, 6, 6, 1900, 100)
+        grid = generate_grid(60, 60, 6, 6, 100, 1900)
 
     step_size = 10 ** (-6)
     start_time = time.time()
-    for _ in range(100):
+    for i in range(100):
         grid = comm.bcast(grid)
         # Determine sub-box to work on.
         updated_subgrid = []
