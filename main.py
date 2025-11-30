@@ -16,7 +16,7 @@ if __name__ == "__main__":
 
     step_size = 10 ** (-6)
     start_time = time.time()
-    for _ in range(2):
+    for _ in range(100):
         grid = comm.bcast(grid)
         # Determine sub-box to work on.
         updated_subgrid = []
@@ -27,19 +27,24 @@ if __name__ == "__main__":
             new_velocity = update_velocity(velocity_vector, force, step_size)
             new_position = update_position(point, new_velocity, step_size)
             updated_subgrid.append((new_position, new_velocity))
+
         # Send back to root process.
         updated_data = comm.gather(updated_subgrid)
+        
         if rank == 0:
             # Update positions and velocities of points.
             if updated_data:
-                pass
+               for i in range(len(grid)):
+                   for j in range(len(grid[0])):
+                       grid[i][j] = updated_data[i][j]
             
     processor_times = comm.gather(time.time() - start_time)
     if rank == 0:
         plt.title("Final Positions of Particles")
         for i in range(len(grid)):
             for j in range(len(grid[0])):
-                plt.plot(grid[i][j][0][0], grid[i][j][0][1])
+                for lst in grid[i][j]:
+                    plt.plot(lst[0][0], lst[0][1])
         plt.savefig("final_positions_plot.png")
         plt.clf()
         if processor_times:
