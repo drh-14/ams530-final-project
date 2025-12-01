@@ -6,24 +6,20 @@ def LJ_derivative(r: np.float64):
     return -12 * (1 / np.pow(r, 13) - 1 / np.pow(r, 7)) if r < 3 else 0
 
 def compute_force_pairwise(point_1: List[NDArray[np.float64]], point_2: List[NDArray[np.float64]]):
-    displacement_vector = np.array([point_2[0][0] - point_1[0][0], point_2[0][1] - point_1[0][1]])
+    displacement_vector = point_2[0] - point_1[0]
     distance = np.linalg.norm(displacement_vector)
-    displacement_vector_normalized = displacement_vector / np.linalg.norm(displacement_vector)
-    energy = LJ_derivative(np.float64(distance))
-    return displacement_vector_normalized * energy
+    inv_r = 1.0 / distance
+    displacement_vector_normalized = inv_r * displacement_vector
+    return displacement_vector_normalized * LJ_derivative(np.float64(distance))
     
-def compute_force_total(point: List[NDArray[np.float64]], neighbor_cells) -> NDArray[np.float64]:
-    total_force = np.array([0.0, 0.0])
-    for i in range(len(neighbor_cells)):
-        for j in range(len(neighbor_cells[0])):
-            for lst in neighbor_cells[i][j]:   
-                curr_point = lst[0]
-                if not np.allclose(curr_point, point):
-                    total_force += compute_force_pairwise(point, curr_point)
-    return -0.5 * total_force
+def compute_force_total(particle: List[NDArray[np.float64]], neighbor_cells) -> NDArray[np.float64]:
+    total_force = np.zeros(2)
+    for cell in neighbor_cells:
+        for other_point in cell:
+            if not np.allclose(particle[0], other_point[0]):
+                total_force += compute_force_pairwise(particle, other_point)
+    return -total_force
 
-def update_cell(cell: List[List[NDArray[np.float64]]], force: NDArray[np.float64], time_step: float):
-    for i in range(len(cell)):
-        cell[i][1] += (force * time_step)
-    for i in range(len(cell)):
-        cell[i][0] += (cell[i][1] * time_step)
+def update_particle(particle: List[NDArray[np.float64]], force: NDArray[np.float64], time_step: float):
+    particle[1] += (time_step * force)
+    particle[0] += (time_step * particle[1])

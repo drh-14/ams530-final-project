@@ -15,23 +15,18 @@ if __name__ == "__main__":
 
     step_size = 10 ** (-6)
     start_time = time.time()
-    directions = [[-1,0], [-1,-1], [-1, 1], [1,0], [1, -1], [1,1], [0, 1], [0, -1], [0, 0]]
-    for i in range(100):
-        # Send main cell.
-        if rank == 0:
-            for j in range(1, size):
-               comm.send(grid[j // 6][j % 6], dest = j)
-       
-        cell = grid[0][0] if rank == 0 else comm.recv(source = 0)
+    directions = [[-1,0], [-1,-1], [-1, 1], [1,0], [1, -1], [1,1], [0, 1], [0, -1]]
+    for _ in range(100):
+        cell = comm.scatter(grid)
         row_index, col_index = rank // 6, rank % 6
         neighbor_cells = []
         for dx, dy in directions:
             nr,nc = row_index + dx, col_index + dy
             if 0 <= nr < 6 and 0 <= nc < 6:
                 neighbor_cells.append(comm.sendrecv(sendobj = cell, dest = 6 * nr + nc, source = 6 * nr + nc))
-        for point in cell:
-            force = compute_force_total(point, neighbor_cells)
-            update_cell(cell, force, step_size)
+        for particle in cell:
+           force = compute_force_total(particle, neighbor_cells)
+           update_particle(particle, force, step_size)
         updated_cells = comm.gather(cell)
         if rank == 0:
             if updated_cells:
