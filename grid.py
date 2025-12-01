@@ -18,5 +18,5 @@ def generate_grid(N:int, M:int, n:int, m:int, num_black:int, num_white:int) -> L
                 magnitude = random.uniform(0, 1)
                 velocity_x = magnitude * np.cos(random_angle)
                 velocity_y = magnitude * np.sin(random_angle)
-                grid[i][j].append((np.array([random_x, random_y]), np.array([velocity_x, velocity_y]))) 
+                grid[i][j].append([np.array([random_x, random_y]), np.array([velocity_x, velocity_y])]) 
     return grid

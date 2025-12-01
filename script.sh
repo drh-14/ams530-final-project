@@ -8,5 +8,4 @@
 #SBATCH --mail-type=BEGIN,END
 #SBATCH --mail-user=darren.hamilton@stonybrook.edu
 
-module load openmpi/gcc/64/4.1.2 
-mpiexec -n 36 python main.py
+python main.py
