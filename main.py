@@ -3,12 +3,12 @@ from grid import *
 from force import *
 import matplotlib.pyplot as plt
 
-def update_cell(i, neighbor_indices, grid, time_step):
-    for j in range(len(grid[i])): 
-        force = compute_force_total(grid[i][j], [grid[j] for j in neighbor_indices])
-        grid[i][j][1] += (force * time_step)
-        grid[i][j][0] += (grid[i][j][1] * time_step)
-    return grid[i]
+def update_cell(cell, neighbors, time_step):
+    for j in range(len(cell)): 
+        force = compute_force_total(cell[j], neighbors)
+        cell[j][1] += (force * time_step)
+        cell[j][0] += (cell[j][1] * time_step)
+    return cell
 
 if __name__ == "__main__":
     grid = generate_grid(60, 60, 10, 10, 100, 1900)
@@ -32,8 +32,7 @@ if __name__ == "__main__":
     
     with Pool(processes = 36) as p:
             for _ in range(100):
-                 new_grid = p.map(lambda t: update_cell(t[0], t[1], grid, step_size), tasks)
-                 grid = new_grid
+                 grid = p.map(lambda t: update_cell(grid[t[0]], [grid[n] for n in t[1]], step_size), tasks)
 
     for i in range(6):
         for j in range(6):
