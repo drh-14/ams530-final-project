@@ -1,8 +1,9 @@
 import random
 import numpy as np
 from typing import List, Tuple
+from numpy.typing import NDArray
 
-def generate_grid(N:int, M:int, n:int, m:int, num_black:int, num_white:int) -> List[List[List[Tuple[List[float], List[float]]]]]:
+def generate_grid(N:int, M:int, n:int, m:int, num_black:int, num_white:int) -> List[List[List[List[NDArray[np.float64]]]]]:
     num_rows, num_cols = N // n, M // m
     grid = [[[] for _ in range(num_cols)] for _ in range(num_rows)]
     for i in range(len(grid)):
