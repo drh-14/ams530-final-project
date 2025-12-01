@@ -72,6 +72,3 @@ if __name__ == "__main__":
     plt.ylabel("Seconds")
     plt.title("Execution Times for 36 Cores")
     plt.savefig("core_execution_times_chart.png")
-
-
-    
